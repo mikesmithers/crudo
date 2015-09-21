@@ -1,0 +1,76 @@
+Quick Installation Instructions
+===============================
+
+These instructions assume that you are starting in the installation directory after downloading and that
+you are connecting to the database via SQL*Plus.
+
+1) Pre-Installation
+-------------------
+
+If you want to install in a new schema (the default)....
+
+    - Go to the scripts directory
+    - connect to Oracle as a user with CREATE USER privileges
+    - run crudo_owner.sql
+    
+    You will be prompted for :
+        - the name of the new crudo Application Owner schema (CRUDO by default)
+        - the default tablespace for the new schema ( USERS by default)
+        - the temporary tablespace for the new schema (TEMP by default)
+        - a password for the new schema
+    This will create a database user.
+    
+If you want to install into an existing schema, you can check to make sure that the schema has the required privileges as follows :
+    - Go to the scripts directory
+    - connect to Oracle as the schema you want to install CRUDO into
+    - run pre-install_check.sql
+    
+    Any additional grants required will be reported by this script.
+    
+    
+2) Installation
+---------------
+
+Connect to the database as the user who will be the Application Owner.
+Run crud_deploy.sql
+
+Review the deployment log in the crud_deploy.log file which is generated in this directory.
+
+3) Post-Installation
+--------------------
+
+To grant access to other database users :
+    - Go to the scripts directory
+    - connect to the database as either the application owner or a user with the GRANT ANY privilege
+    - run grants.sql
+    You will be prompted for :
+        - The application owning schema (defaults to CRUDO)
+        - The user to grant access to
+
+4) SQLDeveloper Extension Deployment
+
+If you use SQLDeveloper, there are two extensions available for CRUDO.
+The first creates an additional tab in the Table View which displays the CRUD matrices for the table in context.
+The second is on the right-click menu in the table node and lets you run a crud on the table in focus.
+
+To add these extensions :
+
+    1) Open SQLDeveloper.
+    2) Go to the Tools Menu and Select Preferences.
+    3) In the Preferences Tree, Expand the database node and click on User Defined Extensions.
+
+    4) Click on the Add Row button.
+
+    5) For the CRUD Tab 
+        Select a type of Editor.
+        Specify the location as the path and filename for crud_tab.xml
+
+    6) For the Crud Table Menu 
+        Specify a type of Action
+        Specify the location as the path and filename for crud_table_action.xml
+
+    7) Re-start SQLDeveloper
+    
+When you bring select a table in the connections tree you should now see a tab called CRUD Matrix added at the end of the list of tabs for the table.
+
+If you right-click on the table, you should see a sub-menu called CRUDO Table Menu with a sub option called Crud Table.

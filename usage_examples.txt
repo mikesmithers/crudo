@@ -1,0 +1,69 @@
+CRUDO Usage Examples
+====================
+
+This document covers examples of how to use the various features of CRUDO.
+
+
+1) Generate / Update CRUD matrices for a table
+
+begin
+    crudo.generate_matrices.crud_table('HR', 'EMPLOYEES');
+end;
+/
+commit;
+
+If this is the first time the table has been processed by the application, it will generate a complete set of matrices.
+If there are already matrices in the CRUD_MATRICES table for this user.table_name then only dependent objects with a last_ddl_time greater than the last_updated value in the table will be re-processed.
+Any records with the override_flag set to 'Y' will be preserved.
+
+2) Set or remove an override record
+
+If, for example, you have a function called GET_EMP_RECS which references the EMPLOYEES table in a dynamic sql statement, it may well not show up in DBA_DEPENDENCIES.
+In such cases, you can create an override CRUD, which the application will respect during refreshes.
+
+To create an override record :
+
+begin
+    crudo.generate_matrices.set_override
+    (
+        i_table_owner => 'HR',
+        i_table_name => 'EMPLOYEES'
+        i_object_owner => 'HR',
+        i_object_name => 'GET_EMP_RECS',
+        i_object_type => 'FUNCTION',
+        i_create => 'N',
+        i_read => 'Y',
+        i_update => 'N',
+        i_delete  => 'N'
+    );
+    commit;
+end;
+/
+
+Override records will persist until you unset them. Once unset, the record will be overwritten then next time CRUD matrices are generated for the table.
+
+To remove an override record :
+
+begin
+    crudo.generate_matrices.remove_override
+    (
+        i_table_owner => 'HR',
+        i_table_name => 'EMPLOYEES'
+        i_object_owner => 'HR',
+        i_object_name => 'GET_EMP_RECS',
+        i_object_type => 'FUNCTION',
+    );
+    commit;
+end;
+/
+
+3) Generate Matrices for all tables in a Schema
+
+begin
+    crudo.generate_matrices.crud_schema('HR');
+end;
+/
+
+This procedure calls CRUD_TABLES for each table in the schema. Therefore, the behaviour is similar.
+
+

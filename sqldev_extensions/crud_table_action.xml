@@ -1,0 +1,25 @@
+<items>
+    <folder type="TABLE">
+        <name>DURCO Table Menu</name>
+        <item type="TABLE" reloadparent="true">
+            <title>Crud Table</title>
+            <prompt type="confirm">
+                <label>Generate a CRUD Matrix for the current table ?</label>
+            </prompt>
+            <sql>
+                <![CDATA[
+                    declare
+                        pragma autonomous_transaction;
+                    begin 
+                        crudo.generate_matrices.crud_table( i_owner => '#OBJECT_OWNER#', i_table_name => '#OBJECT_NAME#');
+                    commit;
+                    exception when others then
+                        rollback;
+                        raise;
+                    end;
+                ]]>
+            </sql>
+            <help>This action Generates a crud for the table</help>
+        </item>
+    </folder>
+</items>
