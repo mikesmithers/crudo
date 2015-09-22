@@ -66,4 +66,48 @@ end;
 
 This procedure calls CRUD_TABLES for each table in the schema. Therefore, the behaviour is similar.
 
+4) Application Settings
+
+There are three application settings that can be queried, two of which can be changed.
+
+To check which version of the application is currently installed :
+
+select crudo.generate_matrices.get_version
+from dual
+/
+
+
+The application runs at one of three logging levels, which determine which types of message are written to the APPLICATION_LOGS table.
+    ERROR - just log error messages (the default)
+    INFO  - Information and error messages
+    DEBUG - all messages
+    
+To see what the current session setting is :
+
+select crudo.generate_matrices.get_log_level
+from dual
+/
+
+To change the log level for the current session :
+begin
+    crudo.generate_matrices.set_log_level('INFO');
+end;
+/
+
+Valid levels are ERROR, INFO and DEBUG.
+
+
+The processing of the search of dependent objects on a table is done using a BULK COLLECT. You can amend the limit setting for this statement.
+To find the current setting :
+
+select crudo.generate_matrices.get_bulk_collect_limit
+from dual
+/
+
+To amend the Bulk Collect limit for this session :
+
+begin
+    crudo.generate_matrices.set_bulk_collect_limit(10000);
+end;
+/
 
