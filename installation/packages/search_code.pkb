@@ -1,9 +1,9 @@
 create or replace package body search_code
 as
 
-    --
-    -- Private
-    --
+    -----------------------------
+    -- PRIVATE package members --
+    -----------------------------
     
     procedure check_trigger_event
     (
@@ -33,9 +33,7 @@ as
         logs.write(lc_proc_name, 'Parameters : i_trigger_name => '||i_trigger_name
             ||', i_table_owner => '||i_table_owner||', i_table_name => '||i_table_name, 'D');
         
-        --
-        -- Assume that a DML trigger on the table is not doing a read on that table
-        --
+        -- Assume that a DML trigger on the table is NOT doing a read on that table
         select 'N' as read_flag, 
             case instr(triggering_event, 'INSERT') when 0 then 'N' else 'Y' end as create_flag,
             case instr(triggering_event, 'UPDATE') when 0 then 'N' else 'Y' end as update_flag,
@@ -56,6 +54,7 @@ as
         o_update := l_update_flag;
         o_delete := l_delete_flag;
         o_event := true;
+    
     exception
         when no_data_found then
             -- Trigger is not on this table
@@ -74,12 +73,12 @@ as
     )
         return clob
     is
-        --
-        -- Retrieve the source for this object from the data dictionary.
-        -- Using DBA_SOURCE rather than DBMS_METADATA because the former is less susceptible to
-        -- unexpected complication arising from the role based nature of DBMS_METADATA security.
-        -- Also, in testing, this method was a bit quicker.
-        --
+    --
+    -- Retrieve the source for this object from the data dictionary.
+    -- Using DBA_SOURCE rather than DBMS_METADATA because the former is less susceptible to
+    -- unexpected complication arising from the role based nature of DBMS_METADATA security.
+    -- Also, in testing, this method was a bit quicker.
+    --
         lc_proc_name constant application_logs.member_name%type := 'GET_SOURCE';
         l_source clob;
     begin
@@ -108,9 +107,9 @@ as
     )
         return boolean
     is
-        --
-        -- Check to see if this object is wrapped in the data dictionary.
-        --
+    --
+    -- Check to see if this object is wrapped in the data dictionary.
+    --
         l_wrapped varchar2(1);
         
     begin
@@ -136,6 +135,9 @@ as
         o_delete out crud_matrices.delete_flag%type
     )
     is
+    --
+    -- Parse the code in i_source to find DML statements against i_table
+    -- 
         lc_proc_name constant application_logs.member_name%type := 'FIND_DML';
         l_source clob;
     
@@ -161,9 +163,7 @@ as
         -- strip all the spaces.
         l_source := replace(i_source,' ');
   
-        --      
-        -- Search for MERGE
-        --
+        -- Search for MERGE statements
         if regexp_instr
         ( 
             l_source,
@@ -178,9 +178,7 @@ as
             o_update := 'N';
         end if;
 
-        --
-        -- Search for SELECT
-        --
+        -- Search for SELECT statements
         if regexp_instr
         ( 
             l_source, 
@@ -193,9 +191,7 @@ as
             o_read := 'N';
         end if;
         
-        --
-        -- Search for UPDATE
-        --
+        -- Search for UPDATE statements
         if regexp_instr
         (
             l_source,
@@ -208,9 +204,7 @@ as
             o_update := 'N';
         end if;
         
-        --
-        -- Search for DELETE
-        --
+        -- Search for DELETE statements
         if regexp_instr
         (
             l_source,
@@ -224,9 +218,13 @@ as
         end if;
     end find_dml;
     
-    --
-    -- PUBLIC
-    --
+    ------------------------------------------------------
+    --                                                  --
+    -- PUBLIC package members                           --
+    -- See package header for general comments on each. --
+    --                                                  --
+    ------------------------------------------------------
+
     procedure table_object_crud
     (
         i_table_owner in crud_matrices.table_owner%type,
@@ -240,10 +238,7 @@ as
         o_delete out crud_matrices.delete_flag%type
     )
     is
-    --
-    -- Main entry point for the package.
-    -- Called from GENERATE_MATRICES
-    --
+
         lc_proc_name constant application_logs.member_name%type := 'TABLE_OBJECT_CRUD';
 
         l_create_flag crud_matrices.create_flag%type := 'N';
@@ -263,10 +258,8 @@ as
             'D');
 
         if i_object_type = 'TRIGGER' then
-            --
             -- If this is a trigger ON the table (as opposed to one that references it in it's body)
-            -- then we can skip any code search and base the crud off it's triggering event
-            --
+            -- then skip any code search and base the crud off it's triggering event
             check_trigger_event
             (
                 i_trigger_name => i_object_name,
@@ -332,4 +325,3 @@ as
     end table_object_crud;   
 end search_code;
 /
-

@@ -20,7 +20,7 @@ alter table crud_matrices
 /
 
 comment on table crud_matrices is
-    'This is the core table of the CRUDO application. It holds the CRUD matrix for each table that has been processed by the application'
+    'This is the core table of the application. It holds the CRUD matrix for each table that has been processed by the application'
 /
 
 comment on column crud_matrices.table_owner is

@@ -1,11 +1,12 @@
 create or replace package search_code
 as
---
+----------------------------------------------------------------------
 -- Called from the GENERATE_MATRICES package, this package
 -- retrieves the program units from the data dictionary and
 -- searches them to identify CRUD relationships with a given table
---
-        procedure table_object_crud
+----------------------------------------------------------------------
+
+    procedure table_object_crud
     (
         i_table_owner in crud_matrices.table_owner%type,
         i_table_name in crud_matrices.table_name%type,

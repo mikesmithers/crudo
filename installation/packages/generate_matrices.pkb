@@ -1,45 +1,60 @@
 create or replace package body generate_matrices
 as
 
-    --
-    -- PRIVATE package members
-    --
+    -----------------------------
+    -- PRIVATE package members --
+    -----------------------------
     
     function table_exists( i_owner in dba_tables.owner%type, i_table_name dba_tables.table_name%type)
         return boolean
     is
+    --
+    -- Check to see i_owner.i_table_name exists in DBA_TABLES
+    -- 
+
         l_dummy pls_integer;
+        
     begin
         select 1 into l_dummy
         from dba_tables
         where owner = i_owner
         and table_name = i_table_name;
-        return true;        
+        
+        return true;
+                
     exception when no_data_found then
         return false;
+    
     end table_exists;
     
     function schema_exists( i_schema in dba_users.username%type)
         return boolean
     is
+    --
+    -- Check to see if i_schema exists in DBA_USERS
+    -- 
+    
         l_dummy pls_integer;
+    
     begin
         select 1 into l_dummy
         from dba_users
         where username = upper( i_schema);
         
         return true;
-    exception
-        when no_data_found then
-            return false;
+    
+    exception when no_data_found then
+        return false;
+    
     end schema_exists;
     
     procedure set_app_info( i_module in varchar2, i_action in varchar2)
     is
     --
     -- Maintain the application info for this session.
-    -- Values set here will be visible in the module and action columns of v$session
+    -- Values set here will be visible in the module and action columns of v$SESSION
     --
+    
         l_current_module varchar2(48);
         l_current_action varchar2(32);
         
@@ -61,6 +76,7 @@ as
             else
                 l_module := l_current_module;
             end if;        
+            
             dbms_application_info.set_module( l_module, l_action);
             return;
         end if; -- End of processing for i_action = 'DONE'
@@ -76,12 +92,18 @@ as
             l_module := l_current_module;
             l_action := substr(i_action,1, 32);
         end if;
+        
         dbms_application_info.set_module( l_module, l_action);
+    
     end set_app_info;
             
-    --      
-    -- PUBLIC package members
-    --
+    ------------------------------------------------------
+    --                                                  --
+    -- PUBLIC package members                           --
+    -- See package header for general comments on each. --
+    --                                                  --
+    ------------------------------------------------------
+    
     function get_version return varchar2
     is
     begin
@@ -102,6 +124,7 @@ as
         end if;
         
         logs.g_log_level := upper( i_level);
+        
     end set_log_level;
 
     function get_bulk_collect_limit 
@@ -109,6 +132,7 @@ as
     is
     begin
         return g_bulk_collect_limit;
+    
     end get_bulk_collect_limit;
     
     procedure set_bulk_collect_limit( i_limit in pls_integer)
@@ -117,7 +141,9 @@ as
         if i_limit < 1 then
             raise_application_error(-20001, 'Bulk Collect Limit must be greater than zero');
         end if;
+        
         g_bulk_collect_limit := i_limit;
+    
     end set_bulk_collect_limit;
     
     procedure set_override
@@ -134,12 +160,15 @@ as
     )
     is
     begin
+        -- Parameter check - table and object details are mandatory.
+        -- Also, there must be at least one crud action specified
         if i_table_owner is null or i_table_name is null
             or i_object_owner is null or i_object_name is null or i_object_type is null
             or coalesce( i_create, i_read, i_update, i_delete) is null 
         then
             raise_application_error( -20002, 'Must provide table and object details and at least one crud action value');
         end if;
+        
         merge into crud_matrices
         using dual
         on
@@ -172,6 +201,7 @@ as
             nvl(i_create, 'N'), nvl(i_read, 'N'), nvl(i_update, 'N'), nvl(i_delete, 'N'),
             'Y', sysdate, user
         );
+
     end set_override;    
 
 
@@ -235,19 +265,13 @@ as
         
         type typ_crud_matrix is table of crud_matrices%rowtype
             index by pls_integer;
-            
-        l_create crud_matrices.create_flag%type;
-        l_read crud_matrices.read_flag%type;
-        l_update crud_matrices.update_flag%type;
-        l_delete crud_matrices.update_flag%type;
-        
-        l_success boolean := true;
         
         tbl_crud_matrix typ_crud_matrix;
-
+            
         cursor c_dependencies is
             with dep_objs as
             (
+                -- Objects with a dependency on the table
                 select dep.owner, dep.name, dep.type, 
                     null as synonym_name,
                     dep.referenced_owner, dep.referenced_name,
@@ -261,6 +285,7 @@ as
                 and dep.referenced_name = i_table_name
                 and dep.referenced_type = 'TABLE'
                 union
+                -- and objects that have a dependency on a synonym pointing to the table
                 select dep.owner, dep.name, dep.type,
                     syn.synonym_name,
                     dep.referenced_owner, dep.referenced_name,
@@ -285,6 +310,9 @@ as
                 select dep_objs.owner, dep_objs.name, dep_objs.type, 
                     dep_objs.synonym_name
                 from dep_objs
+                -- exclude any override records
+                -- or, if this is not a FULL refresh, any records that were last updated
+                -- later than the last_ddl_time on the object
                 where not exists
                 (
                     select 1
@@ -304,13 +332,18 @@ as
                         end > dep_objs.last_ddl_time
                     )
                 );
+                
+        l_create crud_matrices.create_flag%type;
+        l_read crud_matrices.read_flag%type;
+        l_update crud_matrices.update_flag%type;
+        l_delete crud_matrices.update_flag%type;
+        
+        l_success boolean := true;
+
     begin
         logs.write( lc_proc_name, 'Parameters : i_owner => '||i_owner||', i_table_name => '||i_table_name
             ||', i_refresh_type => '||i_refresh_type, 'I');
         
-        --
-        -- Make sure that the table exists in the schema
-        --
         if not table_exists(i_owner, i_table_name)
         then
             raise_application_error(-20003, 'Table does not exist '||i_owner||'.'||i_table_name);
@@ -319,16 +352,13 @@ as
         l_module := $$plsql_unit||'.'||lc_proc_name;
         set_app_info( l_module, i_owner||'.'||i_table_name);
 
-        --
-        -- Find stored program units that have a dependency on this table
-        -- or synonym and where an Override record does not already exist
-        -- for this table
-        --
+        
+        -- Find the dependent stored program units 
         open c_dependencies;
-        loop
+        loop -- Bulk Collect Loop
             fetch c_dependencies bulk collect into tbl_dep_objects limit g_bulk_collect_limit;
             exit when tbl_dep_objects.count = 0;
-            for i in 1..tbl_dep_objects.count loop
+            for i in 1..tbl_dep_objects.count loop -- Process Objects Loop
                 begin -- process object block
                     
                     -- process each dependent object in a nested block.
@@ -374,7 +404,7 @@ as
                 tbl_crud_matrix(i).last_updated_user := user;
             
                 logs.write(lc_proc_name, 'Matrix generated for '||tbl_dep_objects(i).type||' '||tbl_dep_objects(i).name, 'D');
-            end loop; -- Inner bulk collect loop
+            end loop; -- Process objects loop
             
             -- save the new records
             
@@ -400,7 +430,7 @@ as
                         last_updated_user = tbl_crud_matrix(j).last_updated_user
                 when not matched then
                     insert values tbl_crud_matrix(j);
-        end loop; -- Outer loop
+        end loop; -- Bulk collect loop
         close c_dependencies;
         set_app_info( l_module, 'DONE');
     exception
@@ -436,7 +466,7 @@ as
             where owner = i_schema
         )
         loop
-            begin
+            begin -- CRUD_TABLE block
                 -- Make this call in a nested block so that a failure on one table does not
                 -- cause everything to fail
                 
@@ -449,7 +479,7 @@ as
 
             exception when others then
                 logs.err( lc_proc_name);
-            end; -- crud_tab block
+            end; -- CRUD_TABLE block
         end loop;
         set_app_info(l_module, 'DONE');
 

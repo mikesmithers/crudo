@@ -11,7 +11,7 @@ create table application_logs
 /
 
 comment on table application_logs is
-    'Messages logged by the DURCO application'
+    'Messages logged by the application'
 /
     
 comment on column application_logs.username is

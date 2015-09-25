@@ -6,6 +6,11 @@ rem
 declare
     l_dummy pls_integer;
 begin
+    --
+    -- Check the privileges required when executing the installation script.
+    -- Because installation does not entail executing packaged procedures, it doesn't
+    -- matter if these privileges are granted directly to the user or granted via a role
+    --
     for r_reqd_privs in
     (
         with reqd_privs as
@@ -28,7 +33,8 @@ begin
         dbms_output.put_line('Additional Privilege : '||r_reqd_privs.priv||' required');
     end loop;
     --
-    -- SELECT ANY DICTIONARY needs to be granted directly...
+    -- SELECT ANY DICTIONARY needs to be granted directly as it's required when the application
+    -- packages are executed ...
     --
     begin
         select 1

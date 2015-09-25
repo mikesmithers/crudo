@@ -1,6 +1,6 @@
 rem
-rem Script to grant permissions on application objects
-rem
+rem Grant permissions on application objects
+rem 
 rem
 define app_owner = CRUDO
 accept app_owner default &app_owner prompt 'Enter the the Application Owning Schema [&app_owner] :'
