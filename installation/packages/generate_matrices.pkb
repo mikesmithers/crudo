@@ -432,7 +432,21 @@ as
                     insert values tbl_crud_matrix(j);
         end loop; -- Bulk collect loop
         close c_dependencies;
+
+        set_app_info( l_module, 'Remove Deleted Objects');
+        
+        -- Remove crud records for this table where the dependent objects no longer exist
+        delete from crud_matrices
+        where table_owner = i_owner
+        and table_name = i_table_name
+        and (object_owner, object_name, object_type) not in
+        (
+            select owner, object_name, object_type
+            from dba_objects
+        );
+        
         set_app_info( l_module, 'DONE');
+    
     exception
         when others then
             logs.err(lc_proc_name);
@@ -481,6 +495,14 @@ as
                 logs.err( lc_proc_name);
             end; -- CRUD_TABLE block
         end loop;
+        
+        -- remove crud records for tables which no longer exist
+        set_app_info(l_module, 'Removing deleted Tables');
+        
+        delete from crudo.crud_matrices
+        where table_owner = i_schema
+        and table_name not in (select table_name from dba_tables where table_owner = i_schema);
+        
         set_app_info(l_module, 'DONE');
 
     exception when others then
