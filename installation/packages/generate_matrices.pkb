@@ -27,6 +27,27 @@ as
     
     end table_exists;
     
+    function object_exists( i_owner in dba_objects.owner%type,  i_name in dba_objects.object_name%type,  i_type in dba_objects.object_type%type)
+        return boolean
+    is
+    --
+    -- Check to see if i_owner.i_name of i_type exists in DBA_OBJECTS    
+    --
+        l_dummy pls_integer;
+    begin
+    
+        select 1 into l_dummy
+        from dba_objects
+        where owner = i_owner
+        and object_name = i_name
+        and object_type = i_type;
+        
+        return true;
+        
+    exception when no_data_found then
+        return false;
+    end object_exists;
+    
     function schema_exists( i_schema in dba_users.username%type)
         return boolean
     is
@@ -169,15 +190,29 @@ as
             raise_application_error( -20002, 'Must provide table and object details and at least one crud action value');
         end if;
         
+        -- Make sure the table exists in this schema       
+        if not table_exists( upper(i_table_owner), upper(i_table_name)) then
+            raise_application_error( -20003, 'Table '||upper(i_table_name)||' does not exist in schema '||upper(i_table_owner));
+        end if;
+        
+        -- ...and that the object exists
+        if not object_exists( upper(i_object_owner), upper(i_object_name), upper(i_object_type))
+        then
+            raise_application_error
+            ( 
+                -20004, 'Object '||upper(i_object_name)||' of type '||upper(i_object_type)||' does not exist in schema '||upper(i_object_owner)
+            );
+        end if;
+        
         merge into crud_matrices
         using dual
         on
         (
-            table_owner = i_table_owner
-            and table_name = i_table_name
-            and object_owner = i_object_owner
-            and object_name = i_object_name
-            and object_type = i_object_type
+            table_owner = upper(i_table_owner)
+            and table_name = upper(i_table_name)
+            and object_owner = upper(i_object_owner)
+            and object_name = upper(i_object_name)
+            and object_type = upper(i_object_type)
         )
         when matched then update
             set create_flag = nvl(i_create, 'N'),
@@ -196,8 +231,8 @@ as
         )
         values
         (
-            i_table_owner, i_table_name,
-            i_object_owner, i_object_name, i_object_type,
+            upper(i_table_owner), upper(i_table_name),
+            upper(i_object_owner), upper(i_object_name), upper(i_object_type),
             nvl(i_create, 'N'), nvl(i_read, 'N'), nvl(i_update, 'N'), nvl(i_delete, 'N'),
             'Y', sysdate, user
         );
@@ -220,6 +255,20 @@ as
         then
             raise_application_error( -20003, 'Table and object details must be provided.');
         end if;
+
+        -- Make sure the table exists in this schema       
+        if not table_exists( upper(i_table_owner), upper(i_table_name)) then
+            raise_application_error( -20004, 'Table '||upper(i_table_name)||' does not exist in schema '||upper(i_table_owner));
+        end if;
+        
+        -- ...and that the object exists
+        if not object_exists( upper(i_object_owner), upper(i_object_name), upper(i_object_type))
+        then
+            raise_application_error
+            ( 
+                -20005, 'Object '||upper(i_object_name)||' of type '||upper(i_object_type)||' does not exist in schema '||upper(i_object_owner)
+            );
+        end if;
         
         --
         -- Unset the override flag and set the last_updated date to 1st January 1970
@@ -230,11 +279,11 @@ as
         set override_flag = 'N',
         last_updated = to_date('01011970', 'DDMMYYYY'),
         last_updated_user = user
-        where table_owner = i_table_owner
-        and table_name = i_table_name
-        and object_owner = i_object_owner
-        and object_name = i_object_name
-        and object_type = i_object_type
+        where table_owner = upper(i_table_owner)
+        and table_name = upper(i_table_name)
+        and object_owner = upper(i_object_owner)
+        and object_name = upper(i_object_name)
+        and object_type = upper(i_object_type)
         and override_flag = 'Y';
     end remove_override;
     
@@ -302,7 +351,7 @@ as
                 and dep.type in
                 (
                     'FUNCTION', 'PROCEDURE', 'PACKAGE',
-                    'PACKAGE BODY', 'TRIGGER', 'VIEW'
+                    'PACKAGE BODY', 'TRIGGER', 'VIEW', 'MATERIALIZED VIEW'
                 )
                 and syn.table_owner = i_owner
                 and syn.table_name = i_table_name
@@ -344,7 +393,7 @@ as
         logs.write( lc_proc_name, 'Parameters : i_owner => '||i_owner||', i_table_name => '||i_table_name
             ||', i_refresh_type => '||i_refresh_type, 'I');
         
-        if not table_exists(i_owner, i_table_name)
+        if not table_exists(upper(i_owner), upper(i_table_name))
         then
             raise_application_error(-20003, 'Table does not exist '||i_owner||'.'||i_table_name);
         end if;
@@ -368,8 +417,8 @@ as
 
                     search_code.table_object_crud
                     (
-                        i_table_owner => i_owner,
-                        i_table_name => nvl(tbl_dep_objects(i).synonym_name, i_table_name),
+                        i_table_owner => upper(i_owner),
+                        i_table_name => upper(nvl(tbl_dep_objects(i).synonym_name, i_table_name)),
                         i_object_owner => tbl_dep_objects(i).owner,
                         i_object_name => tbl_dep_objects(i).name,
                         i_object_type => tbl_dep_objects(i).type,
@@ -390,8 +439,8 @@ as
                     continue;
                 end if;          
                 
-                tbl_crud_matrix(i).table_owner := i_owner;
-                tbl_crud_matrix(i).table_name := i_table_name;
+                tbl_crud_matrix(i).table_owner := upper(i_owner);
+                tbl_crud_matrix(i).table_name := upper(i_table_name);
                 tbl_crud_matrix(i).object_owner := tbl_dep_objects(i).owner;
                 tbl_crud_matrix(i).object_name := tbl_dep_objects(i).name;
                 tbl_crud_matrix(i).object_type := tbl_dep_objects(i).type;
@@ -436,14 +485,20 @@ as
         set_app_info( l_module, 'Remove Deleted Objects');
         
         -- Remove crud records for this table where the dependent objects no longer exist
+        -- or an override record has been unset
         delete from crud_matrices
         where table_owner = i_owner
         and table_name = i_table_name
-        and (object_owner, object_name, object_type) not in
-        (
-            select owner, object_name, object_type
-            from dba_objects
-        );
+        and
+        ( 
+            (object_owner, object_name, object_type) not in
+            (
+                select owner, object_name, object_type
+                from dba_objects
+            )
+            or ( override_flag = 'N' and last_updated = to_date('01-JAN-1970', 'DD-MON-YYYY'))
+        )
+        ;
         
         set_app_info( l_module, 'DONE');
     
@@ -466,7 +521,7 @@ as
               raise_application_error(-20004, 'i_schema cannot be null');
         end if;
 
-        if not schema_exists( i_schema) then
+        if not schema_exists( upper(i_schema)) then
             raise_application_error(-20004, 'Schema '||i_schema||' does not exist');
         end if;
 
