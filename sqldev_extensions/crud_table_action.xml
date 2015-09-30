@@ -1,6 +1,8 @@
 <items>
     <folder type="TABLE">
-        <name>DURCO Table Menu</name>
+        <name>CRUDO Table Menu</name>
+
+        <!-- CRUD Table -->
         <item type="TABLE" reloadparent="true">
             <title>Crud Table</title>
             <prompt type="confirm">
@@ -19,7 +21,110 @@
                     end;
                 ]]>
             </sql>
+            <confirmation>
+                <title>Confirmation</title>
+                <prompt>CRUD MATRIX generated for table #OBJECT_OWNER#.#OBJECT_NAME#</prompt>
+            </confirmation>
             <help>This action Generates a crud for the table</help>
         </item>
+
+        <!-- Add Override -->
+        <item type="TABLE" reloadparent="true">
+            <title>Add CRUD Override Record</title>
+            <prompt>
+                <label>Object Owner</label>
+                <default><![CDATA[select sys_context('userenv', 'current_schema') from dual]]></default>
+                <value><![CDATA[select username from all_users order by username]]></value>
+            </prompt>
+            <prompt><label>Object Name</label></prompt>
+            <prompt>
+                <label>Object Type :</label>
+                <value><![CDATA[STATIC:FUNCTION:MATERIALIZED VIEW:PACKAGE:PACKAGE BODY:PROCEDURE:TRIGGER:VIEW]]></value>
+            </prompt>
+
+            <prompt>
+                <label>Create</label>
+                <value><![CDATA[STATIC:Y:N]]></value>
+            </prompt>
+            <prompt>
+                <label>Read</label>
+                <value><![CDATA[STATIC:Y:N]]></value>
+            </prompt>
+            <prompt>
+                <label>Update</label>
+                <value><![CDATA[STATIC:Y:N]]></value>
+            </prompt>
+            <prompt>
+                <label>Delete</label>
+                <value><![CDATA[STATIC:Y:N]]></value>
+            </prompt>
+            <sql>
+                    <![CDATA[
+                        declare
+                            pragma autonomous_transaction;
+                        begin
+                            crudo.generate_matrices.set_override
+                            ( 
+                                i_table_owner => '#OBJECT_OWNER#', 
+                                i_table_name => '#OBJECT_NAME#',
+                                i_object_owner => '#0#',
+                                i_object_name => '#1#',
+                                i_object_type => '#2#',
+                                i_create => '#3#',                            
+                                i_read => '#4#',
+                                i_update => '#5#',
+                                i_delete => '#6#'
+                            );
+                        commit;
+                        exception when others then
+                            rollback;
+                            raise;
+                        end;
+                    ]]>
+                </sql>
+                <confirmation>
+                <title>Confirmation</title>
+                <prompt>Override record added for table #OBJECT_OWNER#.#OBJECT_NAME#</prompt>
+            </confirmation>
+
+                <help>This action creates a Manual Override crud matrix record</help>
+        </item>
+        
+        <!-- Remove Override -->
+        <item type="TABLE" reloadparent="true">
+            <title>Remove CRUD Override Record</title>
+            <prompt> <label>Object Owner</label> </prompt>
+            <prompt> <label>Object Name</label> </prompt>
+            <prompt>
+                <label>Object Type :</label>
+                <value><![CDATA[STATIC:FUNCTION:MATERIALIZED VIEW:PACKAGE:PACKAGE BODY:PROCEDURE:TRIGGER:VIEW]]></value>
+            </prompt>
+            <sql>
+                    <![CDATA[
+                        declare
+                            pragma autonomous_transaction;
+                        begin
+                            crudo.generate_matrices.remove_override
+                            ( 
+                                i_table_owner => '#OBJECT_OWNER#', 
+                                i_table_name => '#OBJECT_NAME#',
+                                i_object_owner => '#0#',
+                                i_object_name => '#1#',
+                                i_object_type => '#2#'
+                            );
+                        commit;
+                        exception when others then
+                            rollback;
+                            raise;
+                        end;
+                    ]]>
+            </sql>
+            <confirmation>
+            <title>Confirmation</title>
+            <prompt>Override record for #2# #0#.#1# on table #OBJECT_OWNER#.#OBJECT_NAME# removed</prompt>
+            </confirmation>
+            <help>This action removes a Manual Override crud matrix record</help>
+        </item>
+        
     </folder>
 </items>
