@@ -253,12 +253,12 @@ as
         if i_table_owner is null or i_table_name is null
             or i_object_owner is null or i_object_name is null or i_object_type is null
         then
-            raise_application_error( -20003, 'Table and object details must be provided.');
+            raise_application_error( -20005, 'Table and object details must be provided.');
         end if;
 
         -- Make sure the table exists in this schema       
         if not table_exists( upper(i_table_owner), upper(i_table_name)) then
-            raise_application_error( -20004, 'Table '||upper(i_table_name)||' does not exist in schema '||upper(i_table_owner));
+            raise_application_error( -20006, 'Table '||upper(i_table_name)||' does not exist in schema '||upper(i_table_owner));
         end if;
         
         -- ...and that the object exists
@@ -266,7 +266,7 @@ as
         then
             raise_application_error
             ( 
-                -20005, 'Object '||upper(i_object_name)||' of type '||upper(i_object_type)||' does not exist in schema '||upper(i_object_owner)
+                -20007, 'Object '||upper(i_object_name)||' of type '||upper(i_object_type)||' does not exist in schema '||upper(i_object_owner)
             );
         end if;
         
@@ -395,7 +395,7 @@ as
         
         if not table_exists(upper(i_owner), upper(i_table_name))
         then
-            raise_application_error(-20003, 'Table does not exist '||i_owner||'.'||i_table_name);
+            raise_application_error(-20008, 'Table does not exist '||i_owner||'.'||i_table_name);
         end if;
         
         l_module := $$plsql_unit||'.'||lc_proc_name;
@@ -518,11 +518,11 @@ as
         logs.write( lc_proc_name, 'Parameters : i_schema => '||i_schema||', i_refresh_type => '||i_refresh_type, 'I');
 
         if i_schema is null then
-              raise_application_error(-20004, 'i_schema cannot be null');
+              raise_application_error(-20009, 'i_schema cannot be null');
         end if;
 
         if not schema_exists( upper(i_schema)) then
-            raise_application_error(-20004, 'Schema '||i_schema||' does not exist');
+            raise_application_error(-20010, 'Schema '||i_schema||' does not exist');
         end if;
 
         l_module := $$plsql_unit||'.'||lc_proc_name;
