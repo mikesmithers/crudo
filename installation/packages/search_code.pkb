@@ -301,7 +301,7 @@ as
         --
         if is_wrapped( i_owner => i_object_owner, i_name => i_object_name, i_type => i_object_type)
         then
-            raise_application_error( -20001, 'Source Code is Wrapped. Unable to generate matrix');
+            raise_application_error( -20011, 'Source Code is Wrapped. Unable to generate matrix');
         end if;
         
         l_source :=  get_source( i_owner => i_object_owner, i_name => i_object_name, i_type => i_object_type);
