@@ -5,15 +5,16 @@
         <!-- CRUD Table -->
         <item type="TABLE" reloadparent="true">
             <title>Crud Table</title>
-            <prompt type="confirm">
-                <label>Generate a CRUD Matrix for the current table ?</label>
+            <prompt>
+                <label>Refresh Type</label>
+                <value><![CDATA[STATIC:DELTA:FULL]]></value>
             </prompt>
             <sql>
                 <![CDATA[
                     declare
                         pragma autonomous_transaction;
                     begin 
-                        crudo.generate_matrices.crud_table( i_owner => '#OBJECT_OWNER#', i_table_name => '#OBJECT_NAME#');
+                        crudo.generate_matrices.crud_table( i_owner => '#OBJECT_OWNER#', i_table_name => '#OBJECT_NAME#', i_refresh_type => '#0#');
                     commit;
                     exception when others then
                         rollback;
@@ -25,7 +26,11 @@
                 <title>Confirmation</title>
                 <prompt>CRUD MATRIX generated for table #OBJECT_OWNER#.#OBJECT_NAME#</prompt>
             </confirmation>
-            <help>This action Generates a crud for the table</help>
+            <help>
+                This action Generates a crud for the table. 
+                A DELTA refresh only looks for changes since the record was last updated. 
+                A Full refresh replaces all records that do not have an override_flag set to Y
+            </help>
         </item>
 
         <!-- Add Override -->
@@ -82,10 +87,15 @@
                         end;
                     ]]>
                 </sql>
-                <confirmation>
+            <confirmation>
                 <title>Confirmation</title>
                 <prompt>Override record added for table #OBJECT_OWNER#.#OBJECT_NAME#</prompt>
             </confirmation>
+            <help>
+                Create a manual CRUD record for this table. 
+                NOTE - Unitl it's removed, a manual record will not be overwritten by subsequent CRUDO runs.
+                You can remove an override record by using the Remove CRUD Override Record menu option.
+            </help>
 
                 <help>This action creates a Manual Override crud matrix record</help>
         </item>
@@ -93,7 +103,11 @@
         <!-- Remove Override -->
         <item type="TABLE" reloadparent="true">
             <title>Remove CRUD Override Record</title>
-            <prompt> <label>Object Owner</label> </prompt>
+            <prompt> 
+                <label>Object Owner</label>
+                <default><![CDATA[select sys_context('userenv', 'current_schema') from dual]]></default>
+                <value><![CDATA[select username from all_users order by username]]></value>
+            </prompt>
             <prompt> <label>Object Name</label> </prompt>
             <prompt>
                 <label>Object Type :</label>
@@ -123,7 +137,10 @@
             <title>Confirmation</title>
             <prompt>Override record for #2# #0#.#1# on table #OBJECT_OWNER#.#OBJECT_NAME# removed</prompt>
             </confirmation>
-            <help>This action removes a Manual Override crud matrix record</help>
+            <help>
+                This action will unset the OVERRIDE_FLAG for this record and set the LAST_UPDATED date to 01-JAN-70.
+                The record will then be overwritten next time a CRUD Matrix is generated for this table.
+            </help>
         </item>
         
     </folder>
