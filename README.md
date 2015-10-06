@@ -173,7 +173,7 @@ end;
 
 If you use SQLDeveloper, there are two extensions available for CRUDO.
 The first creates an additional tab in the Table View which displays the CRUD for the table in context.
-The second is on the right-click menu in the table node and lets you run a crud on the table in focus.
+The second is on the right-click menu in the table node and lets you generate a matrix for, or manage override records on the table in focus.
 
 To add these extensions :
 
@@ -193,7 +193,7 @@ To add these extensions :
     
 When you bring select a table in the connections tree you should now see a tab called CRUD Matrix added at the end of the list of tabs for the table.
 
-If you right-click on the table, you should see a sub-menu called DURCO Table Menu with a sub option called Crud Table.
+If you right-click on the table, you should see a sub-menu called CRUDO Table Menu.
 
 #License
 
