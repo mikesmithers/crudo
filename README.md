@@ -21,7 +21,7 @@ Optionally, you can make use of SQLDeveloper extensions to generate and review t
 
 #Installation
 
-Full installation instructions are included in installation_instructions.txt in the installation directory.
+Full installation instructions are included in the [Installation Instructions] (installation/installation_instructions.md) document.
 As CRUDO relies solely on meta data in the data dictionary, you can run it on any environment that contains the application code that you want to analyse.
 
 The quickest way to do this is as follows :
