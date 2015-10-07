@@ -155,7 +155,7 @@ Re-start SQLDeveloper.
 
 You should now see the CRUD MATRIX tab on the Tables view :
 
-<img alt="SQLDeveloper CRUD MATRIX tab" border="0" src="../sqld_tab.png">
+<img alt="SQLDeveloper CRUD MATRIX tab" border="0" src="images/sqld_tab.png">
 
 If you right-click on a table, you should see the **CRUDO Table Menu** :
 
