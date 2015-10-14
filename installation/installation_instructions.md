@@ -135,7 +135,7 @@ In the new row that's created, click in the *Type* column and select **EDITOR** 
 
 <img alt="SQLDeveloper Type - select Editor from drop-down" border="0" src="images/add_tab1.png">
 
-In the new row, click in the *Location* column and choose the **crud_tab.xml** file. You can find this file in the sqldeveloper_extensions folder.
+In the new row, click in the *Location* column and choose the **crud_tab.xml** file. You can find this file in the sqldev_extensions folder.
 
 <img alt="SQLDeveloper Type - select the crud_tab.xml file" border="0" src="images/add_tab2.png">
 
@@ -147,7 +147,7 @@ In the new row that's created, click in the *Type* column and select **ACTION** 
 
 <img alt="SQLDeveloper Type - select ACTION from drop-down" border="0" src="images/add_action.png">
 
-In the new row, click in the *Location* column and choose the **crud_table_action.xml** file. You can find this file in the sqldeveloper_extensions folder.
+In the new row, click in the *Location* column and choose the **crud_table_action.xml** file. You can find this file in the sqldev_extensions folder.
 
 Cick *OK*.
 
