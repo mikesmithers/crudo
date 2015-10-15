@@ -6,7 +6,7 @@
                 <![CDATA[
                 select object_owner, object_name, object_type, 
                     create_flag, read_flag, update_flag, delete_flag, 
-                    last_updated, override_flag
+                    last_updated, last_updated_user, override_flag
                 from crudo.crud_matrices
                 where table_owner = :OBJECT_OWNER
                 and table_name = :OBJECT_NAME
