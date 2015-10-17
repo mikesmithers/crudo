@@ -27,7 +27,7 @@ To do this :
     2. connect to the database via SQL*Plus as the user that you want to install into
 Then run :
 ```sql
-@scripts\crud_owner.sql
+@scripts/crud_owner.sql
 ```
 
 You will be prompted for :
@@ -48,7 +48,7 @@ To run the script :
     2. connect to the database via SQL*Plus as the user that you want to install into
 Then run :
 ```sql
-@scripts\pre_install_check.sql
+@scripts/pre_install_check.sql
 ```
 
 This script will report any additional grants that are required.
