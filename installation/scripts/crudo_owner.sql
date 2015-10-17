@@ -1,3 +1,4 @@
+set verify off
 define crudo_owner = crudo
 define crudo_ts = users
 define temp_ts = temp
@@ -17,3 +18,6 @@ grant select any dictionary,
 
 alter user &crudo_owner quota unlimited on &crudo_ts
 /
+
+set verify on
+
