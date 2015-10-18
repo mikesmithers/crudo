@@ -144,6 +144,12 @@ as
     begin
         logs.write( lc_proc_name, 'Parameters : i_table => '||i_table, 'D');
         
+        -- Initialize the OUT parameters
+        o_create := 'N';
+        o_read := 'N';
+        o_update := 'N';
+        o_delete := 'N';
+        
         -- Find INSERT statements. To filter out INSERT/SELECT statements we need
         -- to retain the word boundaries at the moment so do this check
         -- before stripping spaces...
@@ -156,8 +162,6 @@ as
         then
             logs.write( lc_proc_name, 'Found INSERT statement on '||i_table, 'D');
             o_create := 'Y';
-        else
-            o_create := 'N';
         end if;
 
         -- strip all the spaces.
@@ -173,9 +177,6 @@ as
             logs.write( lc_proc_name, 'Found MERGE statement on '||i_table, 'D');
             o_create := 'Y';
             o_update := 'Y';
-        else
-            -- at this point o_create is already set
-            o_update := 'N';
         end if;
 
         -- Search for SELECT statements
@@ -187,21 +188,19 @@ as
         then
             logs.write( lc_proc_name, 'Found SELECT statement on '||i_table, 'D');
             o_read := 'Y';
-        else
-            o_read := 'N';
         end if;
         
-        -- Search for UPDATE statements
-        if regexp_instr
-        (
-            l_source,
-            'UPDATE[^;_]*'||i_table||'[^_]',1,1,0,'i'
-        ) > 0
-        then
-            logs.write( lc_proc_name, 'Found UPDATE statement on '||i_table, 'D');
-            o_update := 'Y';
-        else
-            o_update := 'N';
+        -- Search for UPDATE statements unless we've already found a MERGE statement
+        if o_update = 'N' then
+            if regexp_instr
+            (
+                l_source,
+                'UPDATE[^;_]*'||i_table||'[^_]',1,1,0,'i'
+            ) > 0
+            then
+                logs.write( lc_proc_name, 'Found UPDATE statement on '||i_table, 'D');
+                o_update := 'Y';
+            end if;
         end if;
         
         -- Search for DELETE statements
@@ -213,8 +212,6 @@ as
         then
             logs.write( lc_proc_name, 'Found DELETE statement on '||i_table, 'D');
             o_delete := 'Y';
-        else
-            o_delete := 'N';
         end if;
     end find_dml;
     
