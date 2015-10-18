@@ -167,18 +167,6 @@ as
         -- strip all the spaces.
         l_source := replace(i_source,' ');
   
-        -- Search for MERGE statements
-        if regexp_instr
-        ( 
-            l_source,
-            'MERGE[^;]*INTO[^;_]*'||i_table||'[^_]',1,1,0,'i'
-        ) > 0
-        then
-            logs.write( lc_proc_name, 'Found MERGE statement on '||i_table, 'D');
-            o_create := 'Y';
-            o_update := 'Y';
-        end if;
-
         -- Search for SELECT statements
         if regexp_instr
         ( 
@@ -190,17 +178,15 @@ as
             o_read := 'Y';
         end if;
         
-        -- Search for UPDATE statements unless we've already found a MERGE statement
-        if o_update = 'N' then
-            if regexp_instr
-            (
-                l_source,
-                'UPDATE[^;_]*'||i_table||'[^_]',1,1,0,'i'
-            ) > 0
-            then
-                logs.write( lc_proc_name, 'Found UPDATE statement on '||i_table, 'D');
-                o_update := 'Y';
-            end if;
+        -- Search for UPDATE statements 
+        if regexp_instr
+        (
+            l_source,
+            'UPDATE[^;_]*'||i_table||'[^_]',1,1,0,'i'
+        ) > 0
+        then
+            logs.write( lc_proc_name, 'Found UPDATE statement on '||i_table, 'D');
+            o_update := 'Y';
         end if;
         
         -- Search for DELETE statements
@@ -212,6 +198,43 @@ as
         then
             logs.write( lc_proc_name, 'Found DELETE statement on '||i_table, 'D');
             o_delete := 'Y';
+        end if;
+    
+        -- If we haven't yet found an INSERT, an UPDATE or a DELETE then search for MERGE statement
+        if o_create = 'N' then
+            -- Find MERGE INSERT
+            if regexp_instr
+            ( 
+                l_source,
+                'MERGE[^;]*INTO[^;_]*'||i_table||'[^;]*WHEN*[^;]*NOT*MATCHED[^;]*THEN[^;]*INSERT[^_]',1,1,0,'i'
+            ) > 0
+            then
+                logs.write( lc_proc_name, 'Found MERGE INSERT statement on '||i_table, 'D');
+                o_create := 'Y';
+            end if;
+        end if;
+        if o_update = 'N' then
+            -- Find MERGE UPDATE
+            if regexp_instr
+            (
+                l_source,
+                'MERGE[^;]*INTO[^;_]*'||i_table||'[^;]*WHEN*[^NOT]*MATCHED[^;]*THEN[^;]*UPDATE[^;_]*SET[^_]',1,1,0,'i'
+            ) > 0
+            then
+                logs.write( lc_proc_name, 'Found MERGE UPDATE statement on '||i_table, 'D');
+                o_update := 'Y';
+            end if;
+        end if;
+        if o_delete = 'N' then
+            -- Find MERGE DELETE
+            if regexp_instr
+            (
+                l_source,
+                'MERGE[^;]*INTO[^;_]*'||i_table||'[^;]*WHEN*[^NOT]*MATCHED[^;]*THEN[^;]*DELETE[^_]',1,1,0,'i'
+            ) > 0
+            then
+                o_delete := 'Y';
+            end if;
         end if;
     end find_dml;
     
