@@ -18,7 +18,7 @@ Optionally, you can make use of SQLDeveloper extensions to generate and review t
 
 <img alt="SQLDeveloper CRUD Matrix Tab" border="0" src="installation/images/sqld_tab.png">
 
-
+**NOTE** you can find more details about how to install and use crudo in <a href="https://mikesmithers.wordpress.com/2015/10/20/reverse-engineering-a-crud-matrix-in-oracle-again-with-crudo/" target="_blank">this blog post</a>.
 #Installation
 
 Full installation instructions are included in the [Installation Instructions] (installation/installation_instructions.md) document.
