@@ -29,7 +29,7 @@ The quickest way to do this is as follows :
 ##Create a schema called CRUDO :
 
 ```sql
-@scripts/crud_owner.sql
+@scripts/crudo_owner.sql
 ```
 
 Accept the default application owner name (CRUDO) and set the default and temporary tablespaces for this user as appropriate.
