@@ -1,10 +1,4 @@
-- [What is CRUDO ?] (#what-is-cruddo)
-- [Installation] (#installation)
-- [Usage] (#usage)
-- [SQLDeveloper Integration] (#sqldeveloper-integration)
-- [License] (#license)
-
-#What is CRUDO ?
+# What is CRUDO ?
 
 Is it a bird, is it a plane, is it a domestic cleaning product ?
 Actually, it's a PL/SQL utility for generating a CRUD matrix for stored PL/SQL program units against database tables.
@@ -19,14 +13,15 @@ Optionally, you can make use of SQLDeveloper extensions to generate and review t
 <img alt="SQLDeveloper CRUD Matrix Tab" border="0" src="installation/images/sqld_tab.png">
 
 **NOTE** you can find more details about how to install and use crudo in <a href="https://mikesmithers.wordpress.com/2015/10/20/reverse-engineering-a-crud-matrix-in-oracle-again-with-crudo/" target="_blank">this blog post</a>.
-#Installation
+
+# Installation
 
 Full installation instructions are included in the [Installation Instructions] (installation/installation_instructions.md) document.
 As CRUDO relies solely on meta data in the data dictionary, you can run it on any environment that contains the application code that you want to analyse.
 
 The quickest way to do this is as follows :
 
-##Create a schema called CRUDO :
+## Create a schema called CRUDO :
 
 ```sql
 @scripts/crudo_owner.sql
@@ -34,15 +29,15 @@ The quickest way to do this is as follows :
 
 Accept the default application owner name (CRUDO) and set the default and temporary tablespaces for this user as appropriate.
 
-##Connect to the database as CRUDO and run :
+## Connect to the database as CRUDO and run :
 
 ```sql
 @crudo_deploy.sql
 ```
 
-#Usage
+# Usage
 
-##Generate or Update CRUD Matrices for a table
+## Generate or Update CRUD Matrices for a table
 
 ```plsql
 begin
@@ -63,7 +58,7 @@ and table_name = 'EMPLOYEES'
 /
 ```
 
-##Generate Matrices for all tables in a Schema
+## Generate Matrices for all tables in a Schema
 
 ```plsql
 begin
@@ -72,7 +67,7 @@ end;
 /
 ```
 
-##Set or remove an override record
+## Set or remove an override record
 
 If, for example, you have a function called GET_EMP_RECS which references the EMPLOYEES table in a dynamic sql statement, it may well not show up in DBA_DEPENDENCIES.
 In such cases, you can create an override CRUD, which the application will respect during refreshes.
@@ -117,7 +112,7 @@ end;
 /
 ```
 
-##Application Settings
+## Application Settings
 
 There are three application settings that can be queried, two of which can be changed.
 
@@ -169,7 +164,7 @@ end;
 /
 ```
 
-#SQLDeveloper Integration
+# SQLDeveloper Integration
 
 If you use SQLDeveloper, there are two extensions available for CRUDO.
 The first creates an additional tab in the Table View which displays the CRUD for the table in context.
@@ -195,6 +190,6 @@ When you bring select a table in the connections tree you should now see a tab c
 
 If you right-click on the table, you should see a sub-menu called CRUDO Table Menu.
 
-#License
+# License
 
 This project is uses the [MIT license](LICENSE).
